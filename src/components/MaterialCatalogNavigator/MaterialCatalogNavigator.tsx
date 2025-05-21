@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import styles from "./styles";
 import { materialDataConcrete } from "./demoDataConcrete";
 
@@ -12,6 +12,19 @@ export interface Material {
   description: string;
 }
 
+// 🔁 Хук задержки (debounce)
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debounced;
+}
+
+// 🔍 Подсветка совпадения в name
 const highlightMatch = (text: string, query: string): React.ReactNode => {
   if (!query) return text;
   const lowerText = text.toLowerCase();
@@ -32,7 +45,9 @@ const highlightMatch = (text: string, query: string): React.ReactNode => {
 };
 
 const MaterialCatalogNavigator: React.FC = () => {
-  const [search, setSearch] = useState("");
+  const [rawSearch, setRawSearch] = useState("");
+  const search = useDebounce(rawSearch, 300);
+
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
@@ -54,21 +69,49 @@ const MaterialCatalogNavigator: React.FC = () => {
   }, [selectedType]);
 
   const filteredItems = useMemo(() => {
-    const lower = search.trim().toLowerCase();
+    const tokens = search.trim().toLowerCase().split(/\s+/);
 
-    const match = (text: string) => text.toLowerCase().includes(lower);
-
-    const base = materialDataConcrete.filter(
+    let filtered = materialDataConcrete.filter(
       (m) =>
         (!selectedType || m.type === selectedType) &&
         (!selectedClass || m.strengthClass === selectedClass)
     );
 
-    if (!lower) return base;
+    if (tokens.length === 0 || tokens[0] === "") return filtered;
 
-    return base.filter(
-      (m) => match(m.name) || match(m.description)
-    );
+    const fieldsToSearch = (m: Material) =>
+      [
+        m.name,
+        m.strengthClass,
+        m.standard,
+        m.unit,
+        m.description,
+        m.type,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+    const startsWith: Material[] = [];
+    const includes: Material[] = [];
+
+    for (const m of filtered) {
+      const haystack = fieldsToSearch(m);
+      const allMatch = tokens.every((token) => haystack.includes(token));
+      if (!allMatch) continue;
+
+      const name = m.name.toLowerCase();
+      const nameStarts = tokens.every(
+        (token) => name.startsWith(token) || name.includes(token)
+      );
+
+      if (nameStarts) {
+        startsWith.push(m);
+      } else {
+        includes.push(m);
+      }
+    }
+
+    return [...startsWith, ...includes];
   }, [search, selectedType, selectedClass]);
 
   return (
@@ -81,6 +124,7 @@ const MaterialCatalogNavigator: React.FC = () => {
           onChange={(e) => {
             setSelectedType(e.target.value);
             setSelectedClass("");
+            setRawSearch(""); // очистка поиска при выборе типа
             setSelectedMaterial(null);
           }}
         >
@@ -114,10 +158,10 @@ const MaterialCatalogNavigator: React.FC = () => {
       <div style={styles.content}>
         <input
           type="text"
-          placeholder="🔍 Поиск по наименованию..."
-          value={search}
+          placeholder="🔍 Поиск по наименованию, ГОСТу, классу..."
+          value={rawSearch}
           onChange={(e) => {
-            setSearch(e.target.value);
+            setRawSearch(e.target.value);
             setSelectedMaterial(null);
           }}
           style={styles.searchInput}
@@ -134,7 +178,7 @@ const MaterialCatalogNavigator: React.FC = () => {
                   selectedMaterial?.id === m.id ? "#eef6ff" : "transparent",
               }}
             >
-              <strong>{highlightMatch(m.name, search)}</strong>
+              <strong>{highlightMatch(m.name, rawSearch)}</strong>
               <div style={styles.meta}>
                 {m.type} / {m.strengthClass}
               </div>
@@ -171,4 +215,3 @@ const MaterialCatalogNavigator: React.FC = () => {
 };
 
 export default MaterialCatalogNavigator;
-
