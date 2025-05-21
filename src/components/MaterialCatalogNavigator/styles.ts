@@ -1,10 +1,8 @@
-// styles.ts
-
 const styles: Record<string, React.CSSProperties> = {
   wrapper: {
     display: "flex",
     width: "980px",
-    minHeight: "700px", // общая увеличенная высота
+    minHeight: "700px",
     border: "1px solid #ddd",
     borderRadius: "8px",
     overflow: "hidden",
@@ -30,32 +28,33 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "14px",
     borderRadius: "4px",
     border: "1px solid #ccc",
+    marginBottom: "12px",
   },
   content: {
     flex: 1,
     padding: "16px",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between", // разносит список и описание
+    justifyContent: "space-between",
   },
   searchInput: {
-  width: "100%",
-  padding: "10px 12px",
-  fontSize: "14px",
-  border: "1px solid #ccc",
-  borderRadius: "6px",
-  marginBottom: "12px",
-  boxSizing: "border-box", // 👈 важно, чтобы padding не увеличивал ширину
-},
- resultList: {
-  listStyle: "none",
-  padding: 0,
-  margin: 0,
-  height: "480px", // ← фиксированная высота
-  overflowY: "auto", // ← всегда прокрутка при необходимости
-  border: "1px solid #eee",
-  borderRadius: "4px",
-  backgroundColor: "#fff",
+    width: "100%",
+    padding: "10px 12px",
+    fontSize: "14px",
+    border: "1px solid #ccc",
+    borderRadius: "6px",
+    marginBottom: "12px",
+    boxSizing: "border-box",
+  },
+  resultList: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    height: "480px",
+    overflowY: "auto",
+    border: "1px solid #eee",
+    borderRadius: "4px",
+    backgroundColor: "#fff",
   },
   resultItem: {
     padding: "10px 12px",
@@ -65,6 +64,7 @@ const styles: Record<string, React.CSSProperties> = {
   meta: {
     fontSize: "12px",
     color: "#888",
+    marginTop: "4px",
   },
   metaSmall: {
     fontSize: "13px",
@@ -93,7 +93,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: "600",
   },
   description: {
-    margin: 0,
+    margin: "4px 0",
     fontSize: "14px",
     color: "#333",
   },
